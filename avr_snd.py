@@ -35,17 +35,14 @@ def analyze(a):
     for i in range(250):
         values = get_values(i, j)
         e = error_sum(histo, values)
-        if e>e0: break
-        e0=e
-        i0=i
+        if e<=e0: i0=i; e0=e
     i=i0
-    for j in range(255, 5, -1):
+    for j in range(255, i+5, -1):
         values = get_values(i, j)
         e = error_sum(histo, values)
-        if e>e0: break
-        e0=e
-        j0=j
+        if e<=e0: j0=j; e0=e
     j=j0
+    values = get_values(i, j)
     print i,j, "=>", values
     return i,j
 
@@ -54,20 +51,19 @@ def compress(a, i=0, j=255):
   limit0, limit1, limit2 = [ (values[0]+values[1])/2, (values[1]+values[2])/2, (values[2]+values[3])/2 ]
   round_off=0
   current_byte=0
-  i=0
+  j=0
   for v in a:
      v=min(255, max(0, round_off+v))
      if v>limit2: o = 3
      elif v>limit1: o = 2
      elif v>limit0: o = 1
      else: o=0
-     current_byte<<=2
-     current_byte|=o
+     current_byte|=o<<(2*j)
      # comment out next line to disable round_off
-     round_off=(v-values[o])/4.0 # faded round off
-     if i & 3 == 3: yield current_byte; current_byte=0
-     i+=1
-  if i & 3 != 3:
+     # round_off=(v-values[o])/8.0 # faded round off
+     j+=1
+     if j == 4: yield current_byte; current_byte=0; j=0
+  if j != 0:
       yield current_byte
 
 def decompress_mapper(a):
