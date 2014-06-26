@@ -23,5 +23,5 @@
 *.app
 
 # python
-.py?
+*.py?
 
